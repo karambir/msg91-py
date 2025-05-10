@@ -97,8 +97,5 @@ class TemplateResource(BaseResource):
         Returns:
             Response from the API
         """
-        params = {
-            "template_id": template_id,
-            "id": version_id
-        }
+        params = {"template_id": template_id, "id": version_id}
         return self.http_client.get("sms/markActive", params=params)

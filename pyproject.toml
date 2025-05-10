@@ -37,9 +37,24 @@ build-backend = "hatchling.build"
 testpaths = ["tests"]
 pythonpath = ["src"]
 
-[tool.black]
+[tool.ruff]
 line-length = 100
-target-version = ["py39"]
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "C",    # flake8-comprehensions
+    "B",    # flake8-bugbear
+    # "UP",   # pyupgrade
+]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
 
 [dependency-groups]
 dev = [
@@ -47,4 +62,5 @@ dev = [
     "pytest-cov>=4.0.0",
     "mypy>=1.0.0",
     "ruff>=0.0.240",
+    "pre-commit>=3.5.0",
 ]

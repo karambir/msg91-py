@@ -31,7 +31,7 @@ class HTTPClient:
         self.httpx_kwargs = httpx_kwargs
         self.timeout = timeout
         self.client = httpx.Client(timeout=self.timeout, **self.httpx_kwargs)
-        
+
     def request(
         self,
         method: str,
@@ -43,16 +43,16 @@ class HTTPClient:
     ) -> Dict[str, Any]:
         """Make a request to the MSG91 API"""
         url = urljoin(self.base_url, path)
-        
+
         # Prepare headers
         request_headers = {
             "Content-Type": "application/json",
             "authkey": self.auth_key,
         }
-        
+
         if headers:
             request_headers.update(headers)
-        
+
         try:
             response = self.client.request(
                 method,
@@ -62,25 +62,27 @@ class HTTPClient:
                 json=json_data,
                 headers=request_headers,
             )
-            
+
             response_data = self._parse_response(response)
             return response_data
-            
+
         except httpx.RequestError as e:
-            raise MSG91Exception(f"Network error: {str(e)}")
-            
+            raise MSG91Exception(f"Network error: {str(e)}") from e
+
     def _parse_response(self, response: httpx.Response) -> Dict[str, Any]:
         """Parse the API response and handle errors"""
         try:
             data = response.json()
         except ValueError:
             data = {"raw_content": response.text}
-        
+
         if not response.is_success:
             # Handle error responses
             error_type = data.get("type", "").lower() if isinstance(data, dict) else ""
-            message = data.get("message", "Unknown error") if isinstance(data, dict) else "Unknown error"
-            
+            message = (
+                data.get("message", "Unknown error") if isinstance(data, dict) else "Unknown error"
+            )
+
             if response.status_code == 401:
                 raise AuthenticationError(
                     message=message,
@@ -99,15 +101,18 @@ class HTTPClient:
                     status=response.status_code,
                     details=data,
                 )
-        
+
         return cast(Dict[str, Any], data)
-            
+
     def get(
-        self, path: str, params: Optional[Dict[str, Any]] = None, headers: Optional[Dict[str, str]] = None
+        self,
+        path: str,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """Make a GET request"""
         return self.request("GET", path, params=params, headers=headers)
-        
+
     def post(
         self,
         path: str,
@@ -117,8 +122,10 @@ class HTTPClient:
         headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """Make a POST request"""
-        return self.request("POST", path, params=params, data=data, json_data=json_data, headers=headers)
-        
+        return self.request(
+            "POST", path, params=params, data=data, json_data=json_data, headers=headers
+        )
+
     def put(
         self,
         path: str,
@@ -128,8 +135,10 @@ class HTTPClient:
         headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """Make a PUT request"""
-        return self.request("PUT", path, params=params, data=data, json_data=json_data, headers=headers)
-        
+        return self.request(
+            "PUT", path, params=params, data=data, json_data=json_data, headers=headers
+        )
+
     def delete(
         self,
         path: str,

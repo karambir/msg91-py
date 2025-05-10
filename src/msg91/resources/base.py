@@ -10,6 +10,6 @@ if TYPE_CHECKING:
 
 class BaseResource:
     """Base class for all API resources"""
-    
+
     def __init__(self, http_client: "HTTPClient"):
         self.http_client = http_client

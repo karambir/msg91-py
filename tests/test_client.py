@@ -2,11 +2,11 @@
 Tests for the MSG91 client
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
 from msg91.client import Client
-from msg91.exceptions import AuthenticationError, ValidationError, APIError
+from msg91.exceptions import APIError, AuthenticationError, ValidationError
 
 
 def test_client_initialization():
@@ -40,7 +40,7 @@ def test_sms_send(mock_request):
         template_id="test_template",
         mobile="9199XXXXXXXX",
         variables={"name": "Test User"},
-        sender_id="SENDER"
+        sender_id="SENDER",
     )
 
     # Verify request
@@ -70,7 +70,11 @@ def test_template_create(mock_request):
     # Setup mock response
     mock_response = MagicMock()
     mock_response.is_success = True
-    mock_response.json.return_value = {"type": "success", "message": "Template created", "data": {"id": "template_id_123"}}
+    mock_response.json.return_value = {
+        "type": "success",
+        "message": "Template created",
+        "data": {"id": "template_id_123"},
+    }
     mock_request.return_value = mock_response
 
     # Initialize client and create template
@@ -79,7 +83,7 @@ def test_template_create(mock_request):
         template_name="Test Template",
         template_body="This is a test template for {{name}}",
         sender_id="SENDER",
-        sms_type="NORMAL"
+        sms_type="NORMAL",
     )
 
     # Verify request
@@ -113,17 +117,14 @@ def test_authentication_error(mock_request):
     mock_response.status_code = 401
     mock_response.json.return_value = {"type": "error", "message": "Invalid auth key"}
     mock_request.return_value = mock_response
-    
+
     # Initialize client and attempt request
     client = Client("invalid_auth_key")
-    
+
     # Verify authentication error is raised
     with pytest.raises(AuthenticationError) as exc_info:
-        client.sms.send(
-            template_id="test_template",
-            mobile="9199XXXXXXXX"
-        )
-        
+        client.sms.send(template_id="test_template", mobile="9199XXXXXXXX")
+
     assert "Invalid auth key" in str(exc_info.value)
     assert exc_info.value.status == 401
 
@@ -137,17 +138,14 @@ def test_validation_error(mock_request):
     mock_response.status_code = 400
     mock_response.json.return_value = {"type": "validation", "message": "Invalid mobile number"}
     mock_request.return_value = mock_response
-    
+
     # Initialize client and attempt request
     client = Client("test_auth_key")
-    
+
     # Verify validation error is raised
     with pytest.raises(ValidationError) as exc_info:
-        client.sms.send(
-            template_id="test_template",
-            mobile="invalid_mobile"
-        )
-        
+        client.sms.send(template_id="test_template", mobile="invalid_mobile")
+
     assert "Invalid mobile number" in str(exc_info.value)
     assert exc_info.value.status == 400
 
@@ -161,16 +159,13 @@ def test_api_error(mock_request):
     mock_response.status_code = 500
     mock_response.json.return_value = {"type": "error", "message": "Internal server error"}
     mock_request.return_value = mock_response
-    
+
     # Initialize client and attempt request
     client = Client("test_auth_key")
-    
+
     # Verify API error is raised
     with pytest.raises(APIError) as exc_info:
-        client.sms.send(
-            template_id="test_template",
-            mobile="9199XXXXXXXX"
-        )
-        
+        client.sms.send(template_id="test_template", mobile="9199XXXXXXXX")
+
     assert "Internal server error" in str(exc_info.value)
     assert exc_info.value.status == 500

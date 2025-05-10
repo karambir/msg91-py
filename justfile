@@ -31,11 +31,13 @@ update:
 
 # Run code quality tools
 lint:
+    uv run ruff format --check src tests
     uv run ruff check src tests
 
-# Format code
+# Format code with ruff
 format:
     uv run ruff format src tests
+    uv run ruff check --fix src tests
 
 # Check types with mypy
 typecheck:
@@ -54,3 +56,15 @@ clean:
 
 # Run all quality checks
 check: lint typecheck test
+
+# Set up pre-commit hooks
+precommit-setup:
+    uv run pre-commit install
+
+# Update pre-commit hooks
+precommit-update:
+    uv run pre-commit autoupdate
+
+# Run all pre-commit hooks on all files
+precommit-run:
+    uv run pre-commit run --all-files
