@@ -66,29 +66,9 @@ jobs:
           git push
           git push origin v${{ steps.new_version.outputs.version }}
 
-      - name: Generate changelog
-        id: changelog
-        run: |
-          previous_tag=$(git describe --tags --abbrev=0 v${{ steps.current_version.outputs.version }} 2>/dev/null || echo "")
-          if [ -z "$previous_tag" ]; then
-            echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-            git log --pretty=format:"* %s (%h)" >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
-          else
-            echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-            git log --pretty=format:"* %s (%h)" $previous_tag..HEAD >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
-          fi
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.new_version.outputs.version }}
           name: Release v${{ steps.new_version.outputs.version }}
-          body: |
-            ## Changes in v${{ steps.new_version.outputs.version }}
-
-            ${{ env.CHANGELOG }}
-          draft: false
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
