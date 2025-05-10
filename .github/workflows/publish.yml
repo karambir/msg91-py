@@ -33,7 +33,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install build twine
+          uv pip install twine
 
       - name: Build package
         run: |
@@ -53,7 +53,7 @@ jobs:
   deploy-testpypi:
     name: Publish to TestPyPI
     needs: build
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi'
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi')
     runs-on: ubuntu-latest
     environment:
       name: testpypi
