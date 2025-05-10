@@ -14,6 +14,10 @@ on:
           - testpypi
           - pypi
 
+permissions:
+  contents: write
+  packages: write
+
 env:
   UV_SYSTEM_PYTHON: 1
 
