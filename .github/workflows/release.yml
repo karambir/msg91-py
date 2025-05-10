@@ -65,10 +65,3 @@ jobs:
         run: |
           git push
           git push origin v${{ steps.new_version.outputs.version }}
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.new_version.outputs.version }}
-          name: Release v${{ steps.new_version.outputs.version }}
-          generate_release_notes: true
