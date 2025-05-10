@@ -1,5 +1,9 @@
 # MSG91 Python Client
 
+[![CI](https://github.com/karambir/msg91-python/actions/workflows/ci.yml/badge.svg)](https://github.com/karambir/msg91-python/actions/workflows/ci.yml)
+[![PyPI Version](https://img.shields.io/pypi/v/msg91.svg)](https://pypi.org/project/msg91/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/msg91.svg)](https://pypi.org/project/msg91/)
+
 A Python client library for the [MSG91 SMS API](https://docs.msg91.com/overview).
 
 ## Installation
