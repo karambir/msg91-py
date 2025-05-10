@@ -1,6 +1,6 @@
 # MSG91 Python Client
 
-[![CI](https://github.com/karambir/msg91-python/actions/workflows/ci.yml/badge.svg)](https://github.com/karambir/msg91-python/actions/workflows/ci.yml)
+[![CI](https://github.com/karambir/msg91-py/actions/workflows/ci.yml/badge.svg)](https://github.com/karambir/msg91-py/actions/workflows/ci.yml)
 [![PyPI Version](https://img.shields.io/pypi/v/msg91-py.svg)](https://pypi.org/project/msg91-py/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/msg91-py.svg)](https://pypi.org/project/msg91-py/)
 

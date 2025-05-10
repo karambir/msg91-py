@@ -25,9 +25,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/karambir/msg91-python"
-Documentation = "https://github.com/karambir/msg91-python"
-Issues = "https://github.com/karambir/msg91-python/issues"
+Homepage = "https://github.com/karambir/msg91-py"
+Documentation = "https://github.com/karambir/msg91-py"
+Issues = "https://github.com/karambir/msg91-py/issues"
 
 [build-system]
 requires = ["hatchling"]
