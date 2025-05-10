@@ -7,12 +7,11 @@ on:
     inputs:
       environment:
         description: 'Environment to deploy to'
-        type: environment
+        type: choice
         required: true
         options:
           - testpypi
           - pypi
-        default: 'testpypi'
 
 env:
   UV_SYSTEM_PYTHON: 1
