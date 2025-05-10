@@ -5,6 +5,7 @@ Tests for the MSG91 client
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from msg91.client import Client
 from msg91.exceptions import APIError, AuthenticationError, ValidationError
 

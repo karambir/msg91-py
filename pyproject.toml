@@ -60,6 +60,9 @@ ignore = []
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["E501"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["msg91"]
+
 [dependency-groups]
 dev = [
     "pytest>=7.0.0",
