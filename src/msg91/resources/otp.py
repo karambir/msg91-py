@@ -4,8 +4,6 @@ OTP Resource for MSG91 API
 
 from typing import Any, Dict, Optional
 
-import httpx
-
 from msg91.resources.base import BaseResource
 
 
@@ -36,12 +34,8 @@ class OTPResource(BaseResource):
         Returns:
             Response from the API containing session ID
         """
-        # Use MSG91's SendOTP API endpoint
-        otp_url = "http://api.msg91.com/api/sendotp.php"
-
         # Prepare parameters
         params: Dict[str, Any] = {
-            "authkey": self.http_client.auth_key,
             "mobile": mobile,
         }
 
@@ -66,51 +60,8 @@ class OTPResource(BaseResource):
         for key, value in kwargs.items():
             params[key] = value
 
-        try:
-            response = httpx.get(otp_url, params=params, timeout=30)
-
-            try:
-                response_data = response.json()
-            except ValueError:
-                response_data = {"raw_content": response.text}
-
-            if not response.is_success:
-                from msg91.exceptions import APIError, AuthenticationError, ValidationError
-
-                error_type = (
-                    response_data.get("type", "").lower() if isinstance(response_data, dict) else ""
-                )
-                message = (
-                    response_data.get("message", "OTP sending failed")
-                    if isinstance(response_data, dict)
-                    else "OTP sending failed"
-                )
-
-                if response.status_code == 401:
-                    raise AuthenticationError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-                elif response.status_code == 400 or error_type == "validation":
-                    raise ValidationError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-                else:
-                    raise APIError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-
-            return response_data
-
-        except httpx.RequestError as e:
-            from msg91.exceptions import MSG91Exception
-
-            raise MSG91Exception(f"Network error: {str(e)}") from e
+        # Use MSG91's SendOTP API endpoint
+        return self.http_client.get("sendotp.php", params=params, api_version="v2")
 
     def verify(
         self,
@@ -128,12 +79,8 @@ class OTPResource(BaseResource):
         Returns:
             Response from the API indicating verification status
         """
-        # Use MSG91's Verify OTP API endpoint
-        verify_url = "http://api.msg91.com/api/verifyRequestOTP.php"
-
         # Prepare parameters
         params: Dict[str, Any] = {
-            "authkey": self.http_client.auth_key,
             "mobile": mobile,
             "otp": otp,
         }
@@ -142,51 +89,8 @@ class OTPResource(BaseResource):
         for key, value in kwargs.items():
             params[key] = value
 
-        try:
-            response = httpx.get(verify_url, params=params, timeout=30)
-
-            try:
-                response_data = response.json()
-            except ValueError:
-                response_data = {"raw_content": response.text}
-
-            if not response.is_success:
-                from msg91.exceptions import APIError, AuthenticationError, ValidationError
-
-                error_type = (
-                    response_data.get("type", "").lower() if isinstance(response_data, dict) else ""
-                )
-                message = (
-                    response_data.get("message", "OTP verification failed")
-                    if isinstance(response_data, dict)
-                    else "OTP verification failed"
-                )
-
-                if response.status_code == 401:
-                    raise AuthenticationError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-                elif response.status_code == 400 or error_type == "validation":
-                    raise ValidationError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-                else:
-                    raise APIError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-
-            return response_data
-
-        except httpx.RequestError as e:
-            from msg91.exceptions import MSG91Exception
-
-            raise MSG91Exception(f"Network error: {str(e)}") from e
+        # Use MSG91's Verify OTP API endpoint
+        return self.http_client.get("verifyRequestOTP.php", params=params, api_version="v2")
 
     def resend(
         self,
@@ -204,12 +108,8 @@ class OTPResource(BaseResource):
         Returns:
             Response from the API
         """
-        # Use MSG91's Retry OTP API endpoint
-        retry_url = "http://api.msg91.com/api/retryotp.php"
-
         # Prepare parameters
         params: Dict[str, Any] = {
-            "authkey": self.http_client.auth_key,
             "mobile": mobile,
             "retrytype": retrytype,
         }
@@ -218,48 +118,5 @@ class OTPResource(BaseResource):
         for key, value in kwargs.items():
             params[key] = value
 
-        try:
-            response = httpx.get(retry_url, params=params, timeout=30)
-
-            try:
-                response_data = response.json()
-            except ValueError:
-                response_data = {"raw_content": response.text}
-
-            if not response.is_success:
-                from msg91.exceptions import APIError, AuthenticationError, ValidationError
-
-                error_type = (
-                    response_data.get("type", "").lower() if isinstance(response_data, dict) else ""
-                )
-                message = (
-                    response_data.get("message", "OTP resend failed")
-                    if isinstance(response_data, dict)
-                    else "OTP resend failed"
-                )
-
-                if response.status_code == 401:
-                    raise AuthenticationError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-                elif response.status_code == 400 or error_type == "validation":
-                    raise ValidationError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-                else:
-                    raise APIError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-
-            return response_data
-
-        except httpx.RequestError as e:
-            from msg91.exceptions import MSG91Exception
-
-            raise MSG91Exception(f"Network error: {str(e)}") from e
+        # Use MSG91's Retry OTP API endpoint
+        return self.http_client.get("retryotp.php", params=params, api_version="v2")

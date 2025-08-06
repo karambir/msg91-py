@@ -49,46 +49,38 @@ def test_format_recipients_multiple():
 
 def test_send_sms():
     """Test sending SMS using standard API"""
-    from unittest.mock import patch
-
     # Mock HTTP client
     http_client = MagicMock()
-    http_client.auth_key = "test_auth_key"
+    http_client.post.return_value = {"type": "success", "message": "SMS sent successfully"}
 
     # Create SMS resource
     sms = SMSResource(http_client)
 
-    with patch("httpx.post") as mock_post:
-        mock_response = MagicMock()
-        mock_response.is_success = True
-        mock_response.json.return_value = {"type": "success", "message": "SMS sent successfully"}
-        mock_post.return_value = mock_response
+    response = sms.send(
+        mobile="919XXXXXXXX",
+        message="Test SMS message",
+        sender="SENDER",
+        route="4",
+        country="91",
+    )
 
-        response = sms.send(
-            mobile="919XXXXXXXX",
-            message="Test SMS message",
-            sender="SENDER",
-            route="4",
-            country="91",
-        )
+    # Verify post was called correctly
+    http_client.post.assert_called_once()
+    args, kwargs = http_client.post.call_args
+    assert args[0] == "v2/sendsms"
+    assert kwargs["api_version"] == "v2"
 
-        # Verify httpx.post was called correctly
-        mock_post.assert_called_once()
-        args, kwargs = mock_post.call_args
-        assert args[0] == "http://api.msg91.com/api/v2/sendsms"
+    # Check payload
+    payload = kwargs.get("json_data", {})
+    assert payload["mobiles"] == "919XXXXXXXX"
+    assert payload["message"] == "Test SMS message"
+    assert payload["sender"] == "SENDER"
+    assert payload["route"] == "4"
+    assert payload["country"] == "91"
+    assert payload["response"] == "json"
 
-        # Check payload
-        payload = kwargs.get("json", {})
-        assert payload["mobiles"] == "919XXXXXXXX"
-        assert payload["message"] == "Test SMS message"
-        assert payload["sender"] == "SENDER"
-        assert payload["route"] == "4"
-        assert payload["country"] == "91"
-        assert payload["authkey"] == "test_auth_key"
-        assert payload["response"] == "json"
-
-        # Check response
-        assert response == {"type": "success", "message": "SMS sent successfully"}
+    # Check response
+    assert response == {"type": "success", "message": "SMS sent successfully"}
 
 
 def test_send_template_sms():

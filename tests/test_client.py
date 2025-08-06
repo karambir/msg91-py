@@ -14,51 +14,50 @@ def test_client_initialization():
     """Test client initialization with proper parameters"""
     client = Client("test_auth_key")
     assert client.http_client.auth_key == "test_auth_key"
-    assert client.http_client.base_url == "https://control.msg91.com/api/v5"
+    assert client.http_client.v5_base_url == "https://control.msg91.com/api/v5"
+    assert client.http_client.v2_base_url == "http://api.msg91.com/api"
 
     # Test with custom base URL
     custom_url = "https://custom.msg91.com/api"
     client = Client("test_auth_key", base_url=custom_url)
-    assert client.http_client.base_url == custom_url
+    assert client.http_client.v5_base_url == custom_url
 
     # Test with custom timeout
     client = Client("test_auth_key", timeout=60)
     assert client.http_client.timeout == 60
 
 
-@patch("httpx.post")
-def test_sms_send(mock_post):
+def test_sms_send():
     """Test SMS send functionality using standard API"""
-    # Setup mock response
-    mock_response = MagicMock()
-    mock_response.is_success = True
-    mock_response.json.return_value = {"type": "success", "message": "SMS sent successfully"}
-    mock_post.return_value = mock_response
-
-    # Initialize client and send SMS
+    # Initialize client
     client = Client("test_auth_key")
-    response = client.sms.send(
-        mobile="919XXXXXXXX", message="Test SMS message", sender="SENDER", route="4"
-    )
 
-    # Verify request
-    mock_post.assert_called_once()
+    # Mock the post method
+    with patch.object(client.sms.http_client, "post") as mock_post:
+        mock_post.return_value = {"type": "success", "message": "SMS sent successfully"}
 
-    # Check method and URL
-    args, kwargs = mock_post.call_args
-    assert args[0] == "http://api.msg91.com/api/v2/sendsms"
-    assert kwargs["headers"]["authkey"] == "test_auth_key"
+        response = client.sms.send(
+            mobile="919XXXXXXXX", message="Test SMS message", sender="SENDER", route="4"
+        )
 
-    # Check JSON payload
-    payload = kwargs["json"]
-    assert payload["mobiles"] == "919XXXXXXXX"
-    assert payload["message"] == "Test SMS message"
-    assert payload["sender"] == "SENDER"
-    assert payload["route"] == "4"
-    assert payload["authkey"] == "test_auth_key"
+        # Verify request
+        mock_post.assert_called_once()
 
-    # Check response
-    assert response == {"type": "success", "message": "SMS sent successfully"}
+        # Check method and URL
+        args, kwargs = mock_post.call_args
+        assert args[0] == "v2/sendsms"
+        assert kwargs["api_version"] == "v2"
+
+        # Check JSON payload
+        payload = kwargs["json_data"]
+        assert payload["mobiles"] == "919XXXXXXXX"
+        assert payload["message"] == "Test SMS message"
+        assert payload["sender"] == "SENDER"
+        assert payload["route"] == "4"
+        assert payload["response"] == "json"
+
+        # Check response
+        assert response == {"type": "success", "message": "SMS sent successfully"}
 
 
 @patch("httpx.Client.request")
@@ -118,9 +117,13 @@ def test_authentication_error(mock_request):
     # Initialize client and attempt request
     client = Client("invalid_auth_key")
 
-    # Mock httpx.post for the new SMS API
-    with patch("httpx.post") as mock_post:
-        mock_post.return_value = mock_response
+    # Mock post to raise AuthenticationError
+    with patch.object(client.sms.http_client, "post") as mock_post:
+        mock_post.side_effect = AuthenticationError(
+            message="Invalid auth key",
+            status=401,
+            details={"type": "error", "message": "Invalid auth key"},
+        )
 
         # Verify authentication error is raised
         with pytest.raises(AuthenticationError) as exc_info:
@@ -143,9 +146,13 @@ def test_validation_error(mock_request):
     # Initialize client and attempt request
     client = Client("test_auth_key")
 
-    # Mock httpx.post for the new SMS API
-    with patch("httpx.post") as mock_post:
-        mock_post.return_value = mock_response
+    # Mock post to raise ValidationError
+    with patch.object(client.sms.http_client, "post") as mock_post:
+        mock_post.side_effect = ValidationError(
+            message="Invalid mobile number",
+            status=400,
+            details={"type": "validation", "message": "Invalid mobile number"},
+        )
 
         # Verify validation error is raised
         with pytest.raises(ValidationError) as exc_info:
@@ -168,9 +175,13 @@ def test_api_error(mock_request):
     # Initialize client and attempt request
     client = Client("test_auth_key")
 
-    # Mock httpx.post for the new SMS API
-    with patch("httpx.post") as mock_post:
-        mock_post.return_value = mock_response
+    # Mock post to raise APIError
+    with patch.object(client.sms.http_client, "post") as mock_post:
+        mock_post.side_effect = APIError(
+            message="Internal server error",
+            status=500,
+            details={"type": "error", "message": "Internal server error"},
+        )
 
         # Verify API error is raised
         with pytest.raises(APIError) as exc_info:

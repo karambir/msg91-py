@@ -4,8 +4,6 @@ SMS Resource for MSG91 API
 
 from typing import Any, Dict, List, Optional, Union
 
-import httpx
-
 from msg91.resources.base import BaseResource
 
 
@@ -42,9 +40,6 @@ class SMSResource(BaseResource):
         Returns:
             Response from the API
         """
-        # Use MSG91's v2 SMS API endpoint
-        sms_url = "http://api.msg91.com/api/v2/sendsms"
-
         # Format mobile numbers
         if isinstance(mobile, list):
             mobile_str = ",".join(mobile)
@@ -53,7 +48,6 @@ class SMSResource(BaseResource):
 
         # Prepare payload
         payload: Dict[str, Any] = {
-            "authkey": self.http_client.auth_key,
             "mobiles": mobile_str,
             "message": message,
             "sender": sender,
@@ -80,57 +74,8 @@ class SMSResource(BaseResource):
         for key, value in kwargs.items():
             payload[key] = value
 
-        # Use direct httpx client for MSG91 v2 API
-        headers = {
-            "Content-Type": "application/json",
-            "authkey": self.http_client.auth_key,
-        }
-
-        try:
-            response = httpx.post(sms_url, json=payload, headers=headers, timeout=30)
-
-            try:
-                response_data = response.json()
-            except ValueError:
-                response_data = {"raw_content": response.text}
-
-            if not response.is_success:
-                from msg91.exceptions import APIError, AuthenticationError, ValidationError
-
-                error_type = (
-                    response_data.get("type", "").lower() if isinstance(response_data, dict) else ""
-                )
-                message = (
-                    response_data.get("message", "SMS sending failed")
-                    if isinstance(response_data, dict)
-                    else "SMS sending failed"
-                )
-
-                if response.status_code == 401:
-                    raise AuthenticationError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-                elif response.status_code == 400 or error_type == "validation":
-                    raise ValidationError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-                else:
-                    raise APIError(
-                        message=message,
-                        status=response.status_code,
-                        details=response_data,
-                    )
-
-            return response_data
-
-        except httpx.RequestError as e:
-            from msg91.exceptions import MSG91Exception
-
-            raise MSG91Exception(f"Network error: {str(e)}") from e
+        # Use MSG91's v2 SMS API endpoint
+        return self.http_client.post("v2/sendsms", json_data=payload, api_version="v2")
 
     def send_template(
         self,
