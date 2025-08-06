@@ -26,40 +26,36 @@ def test_client_initialization():
     assert client.http_client.timeout == 60
 
 
-@patch("httpx.Client.request")
-def test_sms_send(mock_request):
-    """Test SMS send functionality"""
+@patch("httpx.post")
+def test_sms_send(mock_post):
+    """Test SMS send functionality using standard API"""
     # Setup mock response
     mock_response = MagicMock()
     mock_response.is_success = True
     mock_response.json.return_value = {"type": "success", "message": "SMS sent successfully"}
-    mock_request.return_value = mock_response
+    mock_post.return_value = mock_response
 
     # Initialize client and send SMS
     client = Client("test_auth_key")
     response = client.sms.send(
-        template_id="test_template",
-        mobile="9199XXXXXXXX",
-        variables={"name": "Test User"},
-        sender_id="SENDER",
+        mobile="919XXXXXXXX", message="Test SMS message", sender="SENDER", route="4"
     )
 
     # Verify request
-    mock_request.assert_called_once()
+    mock_post.assert_called_once()
 
-    # Check method, url and headers
-    args, kwargs = mock_request.call_args
-    assert args[0] == "POST"
-    assert args[1].endswith("flow")
+    # Check method and URL
+    args, kwargs = mock_post.call_args
+    assert args[0] == "http://api.msg91.com/api/v2/sendsms"
     assert kwargs["headers"]["authkey"] == "test_auth_key"
 
     # Check JSON payload
     payload = kwargs["json"]
-    assert payload["template_id"] == "test_template"
-    assert len(payload["recipients"]) == 1
-    assert payload["recipients"][0]["mobile"] == "9199XXXXXXXX"
-    assert payload["recipients"][0]["variables"] == {"name": "Test User"}
+    assert payload["mobiles"] == "919XXXXXXXX"
+    assert payload["message"] == "Test SMS message"
     assert payload["sender"] == "SENDER"
+    assert payload["route"] == "4"
+    assert payload["authkey"] == "test_auth_key"
 
     # Check response
     assert response == {"type": "success", "message": "SMS sent successfully"}
@@ -122,9 +118,13 @@ def test_authentication_error(mock_request):
     # Initialize client and attempt request
     client = Client("invalid_auth_key")
 
-    # Verify authentication error is raised
-    with pytest.raises(AuthenticationError) as exc_info:
-        client.sms.send(template_id="test_template", mobile="9199XXXXXXXX")
+    # Mock httpx.post for the new SMS API
+    with patch("httpx.post") as mock_post:
+        mock_post.return_value = mock_response
+
+        # Verify authentication error is raised
+        with pytest.raises(AuthenticationError) as exc_info:
+            client.sms.send(mobile="919XXXXXXXX", message="Test", sender="SENDER")
 
     assert "Invalid auth key" in str(exc_info.value)
     assert exc_info.value.status == 401
@@ -143,9 +143,13 @@ def test_validation_error(mock_request):
     # Initialize client and attempt request
     client = Client("test_auth_key")
 
-    # Verify validation error is raised
-    with pytest.raises(ValidationError) as exc_info:
-        client.sms.send(template_id="test_template", mobile="invalid_mobile")
+    # Mock httpx.post for the new SMS API
+    with patch("httpx.post") as mock_post:
+        mock_post.return_value = mock_response
+
+        # Verify validation error is raised
+        with pytest.raises(ValidationError) as exc_info:
+            client.sms.send(mobile="invalid_mobile", message="Test", sender="SENDER")
 
     assert "Invalid mobile number" in str(exc_info.value)
     assert exc_info.value.status == 400
@@ -164,9 +168,13 @@ def test_api_error(mock_request):
     # Initialize client and attempt request
     client = Client("test_auth_key")
 
-    # Verify API error is raised
-    with pytest.raises(APIError) as exc_info:
-        client.sms.send(template_id="test_template", mobile="9199XXXXXXXX")
+    # Mock httpx.post for the new SMS API
+    with patch("httpx.post") as mock_post:
+        mock_post.return_value = mock_response
+
+        # Verify API error is raised
+        with pytest.raises(APIError) as exc_info:
+            client.sms.send(mobile="919XXXXXXXX", message="Test", sender="SENDER")
 
     assert "Internal server error" in str(exc_info.value)
     assert exc_info.value.status == 500

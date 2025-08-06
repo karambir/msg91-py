@@ -48,16 +48,60 @@ def test_format_recipients_multiple():
 
 
 def test_send_sms():
-    """Test sending SMS"""
+    """Test sending SMS using standard API"""
+    from unittest.mock import patch
+
+    # Mock HTTP client
+    http_client = MagicMock()
+    http_client.auth_key = "test_auth_key"
+
+    # Create SMS resource
+    sms = SMSResource(http_client)
+
+    with patch("httpx.post") as mock_post:
+        mock_response = MagicMock()
+        mock_response.is_success = True
+        mock_response.json.return_value = {"type": "success", "message": "SMS sent successfully"}
+        mock_post.return_value = mock_response
+
+        response = sms.send(
+            mobile="919XXXXXXXX",
+            message="Test SMS message",
+            sender="SENDER",
+            route="4",
+            country="91",
+        )
+
+        # Verify httpx.post was called correctly
+        mock_post.assert_called_once()
+        args, kwargs = mock_post.call_args
+        assert args[0] == "http://api.msg91.com/api/v2/sendsms"
+
+        # Check payload
+        payload = kwargs.get("json", {})
+        assert payload["mobiles"] == "919XXXXXXXX"
+        assert payload["message"] == "Test SMS message"
+        assert payload["sender"] == "SENDER"
+        assert payload["route"] == "4"
+        assert payload["country"] == "91"
+        assert payload["authkey"] == "test_auth_key"
+        assert payload["response"] == "json"
+
+        # Check response
+        assert response == {"type": "success", "message": "SMS sent successfully"}
+
+
+def test_send_template_sms():
+    """Test sending SMS using template (Flow API)"""
     # Mock HTTP client
     http_client = MagicMock()
     http_client.post.return_value = {"type": "success", "message": "SMS sent successfully"}
 
     # Create SMS resource and send SMS
     sms = SMSResource(http_client)
-    response = sms.send(
+    response = sms.send_template(
         template_id="test_template",
-        mobile="9199XXXXXXXX",
+        mobile="919XXXXXXXX",
         variables={"name": "Test User"},
         sender_id="SENDER",
         short_url=True,
@@ -72,7 +116,7 @@ def test_send_sms():
     payload = kwargs.get("json_data", {})
     assert payload["template_id"] == "test_template"
     assert len(payload["recipients"]) == 1
-    assert payload["recipients"][0]["mobile"] == "9199XXXXXXXX"
+    assert payload["recipients"][0]["mobile"] == "919XXXXXXXX"
     assert payload["recipients"][0]["variables"] == {"name": "Test User"}
     assert payload["sender"] == "SENDER"
     assert payload["short_url"] == "1"
