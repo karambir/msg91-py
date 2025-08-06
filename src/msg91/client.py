@@ -5,6 +5,7 @@ MSG91 Client for Python
 from typing import Any, Optional
 
 from msg91.http_client import HTTPClient
+from msg91.resources.otp import OTPResource
 from msg91.resources.sms import SMSResource
 from msg91.resources.template import TemplateResource
 
@@ -37,3 +38,4 @@ class Client:
         # Initialize resources
         self.sms = SMSResource(self.http_client)
         self.template = TemplateResource(self.http_client)
+        self.otp = OTPResource(self.http_client)
