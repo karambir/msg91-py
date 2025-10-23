@@ -1,6 +1,6 @@
 [project]
 name = "msg91-py"
-version = "0.2.0"
+version = "0.2.1"
 description = "A Python client library for the MSG91 SMS API"
 readme = "README.md"
 authors = [
