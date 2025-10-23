@@ -4,6 +4,7 @@ Example script showing how to use the MSG91 Python client to manage templates
 """
 
 import os
+
 from msg91 import Client
 
 # Get AUTH_KEY from environment variables
@@ -22,7 +23,7 @@ try:
         template_name="Welcome Message",
         template_body="Welcome to our service, {{name}}! Your OTP is {{otp}}.",
         sender_id="SENDER",
-        sms_type="NORMAL"
+        sms_type="NORMAL",
     )
     print("Template created successfully!")
     print(f"Response: {response}")
@@ -35,7 +36,7 @@ try:
         version_response = client.template.add_version(
             template_id=template_id,
             template_body="Welcome to our updated service, {{name}}! Your OTP is {{otp}}.",
-            sender_id="SENDER"
+            sender_id="SENDER",
         )
         print("Template version added successfully!")
         print(f"Version response: {version_response}")
@@ -50,8 +51,7 @@ try:
             version_id = versions["data"][0].get("id")
             if version_id:
                 default_response = client.template.set_default(
-                    template_id=template_id,
-                    version_id=version_id
+                    template_id=template_id, version_id=version_id
                 )
                 print("Template version set as default!")
                 print(f"Default response: {default_response}")

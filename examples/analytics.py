@@ -5,6 +5,7 @@ Example script showing how to use the MSG91 Python client to get SMS logs and an
 
 import os
 from datetime import datetime, timedelta
+
 from msg91 import Client
 
 # Get AUTH_KEY from environment variables
@@ -23,22 +24,18 @@ start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
 # Example: Get SMS logs
 try:
-    logs = client.sms.get_logs(
-        start_date=start_date,
-        end_date=end_date
-    )
+    logs = client.sms.get_logs(start_date=start_date, end_date=end_date)
     print(f"SMS Logs for {start_date} to {end_date}:")
     for log in logs.get("data", []):
-        print(f"- Mobile: {log.get('mobile')}, Status: {log.get('status')}, Date: {log.get('date')}")
+        print(
+            f"- Mobile: {log.get('mobile')}, Status: {log.get('status')}, Date: {log.get('date')}"
+        )
 except Exception as e:
     print(f"Error getting SMS logs: {e}")
 
 # Example: Get analytics
 try:
-    analytics = client.sms.get_analytics(
-        start_date=start_date,
-        end_date=end_date
-    )
+    analytics = client.sms.get_analytics(start_date=start_date, end_date=end_date)
     print(f"\nSMS Analytics for {start_date} to {end_date}:")
     data = analytics.get("data", {})
     print(f"- Total sent: {data.get('total_sent', 0)}")

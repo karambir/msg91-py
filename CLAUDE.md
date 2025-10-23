@@ -8,8 +8,8 @@ This document contains essential information about the MSG91 Python client libra
 **Description**: A Python client library for the MSG91 SMS API
 **Author**: Karambir Singh Nain
 **License**: MIT
-**Python Support**: 3.9, 3.10, 3.11, 3.12, 3.13
-**Current Version**: 0.1.6
+**Python Support**: 3.9, 3.10, 3.11, 3.12, 3.13, 3.14
+**Current Version**: 0.2.0
 
 **Repository**: https://github.com/karambir/msg91-py
 **PyPI Package**: `msg91-py` (import as `msg91`)
